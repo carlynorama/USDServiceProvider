@@ -20,20 +20,22 @@ public struct USDServiceProvider {
     }
     
     public func usdcatHelp() -> String {
+        //TODO: Environment setting means don't need full path.
         let message = try? shell("\(pathToBin)/usdcat -h")
         return (message != nil) ? message! : "nothing to say"
     }
     
-    public func makeCrate(from inputFile:String, outputFile:String) {
+    @discardableResult
+    public func makeCrate(from inputFile:String, outputFile:String) -> String {
        // print(try? shell("pwd"))
         let message = try? shell("usdcat -o \(outputFile) --flatten \(inputFile)")
-        print(message ?? "")
+        return message ?? ""
     }
     
-    public func check(_ inputFile:String) {
+    public func check(_ inputFile:String) -> String {
        // print(try? shell("pwd"))
         let message = try? shell("usdchecker \(inputFile)")
-        print(message ?? "")
+        return message ?? "no message"
     }
     
     @discardableResult
@@ -43,7 +45,7 @@ public struct USDServiceProvider {
         
         task.standardOutput = pipe
         task.standardError = pipe
-        task.arguments = ["-c", environmentWrap(command, python: .pyenv("3.10"))]
+        task.arguments = ["-c", environmentWrap(command, python: pythonEnv)]
         
         task.standardInput = nil
         task.executableURL = URL(fileURLWithPath: "/bin/bash") //<-- what shell
@@ -65,6 +67,15 @@ public struct USDServiceProvider {
 }
 
 extension USDServiceProvider {
+    
+    func environmentWrap(_ newCommand:String, python:PythonEnvironment) -> String {
+        """
+        \(python.setString)
+        export PATH=$PATH:\(pathToBaseDir)/bin;
+        export PYTHONPATH=$PYTHONPATH:\(pathToBaseDir)/lib/python
+        \(newCommand)
+        """
+    }
     
     public enum PythonEnvironment {
         case defaultSystem
@@ -108,16 +119,6 @@ extension USDServiceProvider {
             export PATH
             """
         }
-    }
-    
-    
-    func environmentWrap(_ newCommand:String, python:PythonEnvironment) -> String {
-        """
-        \(python.setString)
-        export PATH=$PATH:\(pathToBaseDir)/bin;
-        export PYTHONPATH=$PYTHONPATH:\(pathToBaseDir)/lib/python
-        \(newCommand)
-        """
     }
 
 }

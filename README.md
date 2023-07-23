@@ -1,6 +1,15 @@
 # USDServiceProvider
 
-Initial proof of concept for using OpenUSD Library in a MacOS or Linux project written in Swift.
+Initial proof of concept for using OpenUSD Library in a MacOS (Linux, soon) project written in Swift.
+
+This Library expects the programmer to have a known-good build of OpenUSD, using the 
+
+- system's default build of python
+- a pyenv managed version of python
+- a version of python at `/Library/Frameworks/Python.framework/Versions/\(version)/bin`
+- a version of python at some other programmer known location. 
+
+Not many functions working yet but usdacat and usdchecker can be run and return values.
 
 
 ## Example Usage
@@ -44,15 +53,16 @@ public struct USDTestingCLI:ParsableCommand {
         @Argument(help: "The output file") var outputFile: String?
         
         func run() throws {
-            
-            //TODO: fragile. if cli sticks around, improve.
+    
             let outputFilePath = outputFile ?? inputFile.replacingOccurrences(of: ".usda", with: ".usdc")
             
             let usdSP = USDServiceProvider(pathToUSDBuild: USDBuild, pythonEnv: .pyenv("3.10p"))
+            
             print("hello")
             
+            let reuslt = usdSP.check(inputFile)
+            print(reuslt)
             usdSP.makeCrate(from: inputFile, outputFile: outputFilePath)
-            usdSP.check(inputFile)
         }
     }
 }
