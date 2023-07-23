@@ -38,6 +38,16 @@ public struct USDServiceProvider {
         return message ?? "no message"
     }
     
+    
+    // Works from Terminal other shell program, not so much XCode b/c of pyenv
+    // TODO: Try on computer with system python USD Build
+    public func saveHelloWorld(to outputLocation:String) {
+        let current = URL(string: #file)
+        let dir = current!.deletingLastPathComponent()
+        let message = try? shell("python3 \(dir)/python_scripts/hello_world.py \(outputLocation)")
+        print("message:\(message ?? "no message")")
+    }
+    
     @discardableResult
     func shell(_ command: String) throws -> String {
         let task = Process()
