@@ -69,7 +69,8 @@ extension USDServiceProvider {
     public enum PythonEnvironment {
         case defaultSystem
         case pyenv(String)
-        case systemInstall(String)
+        case systemInstallMacOS(String)
+        case customPath(String)
         
         var setString:String {
             switch self {
@@ -78,8 +79,10 @@ extension USDServiceProvider {
                 return ""
             case .pyenv(let v):
                 return setPythonWithPyEnv(version: v)
-            case .systemInstall(let v):
-                return setPythonSystem(version: v)
+            case .systemInstallMacOS(let v):
+                return setPythonSystemMacOS(version: v)
+            case .customPath(let p):
+                return prependPath(customString: p)
             }
         }
         
@@ -92,9 +95,16 @@ extension USDServiceProvider {
             """
         }
         
-        func setPythonSystem(version:String) -> String {
+        func setPythonSystemMacOS(version:String) -> String {
             """
             PATH="/Library/Frameworks/Python.framework/Versions/\(version)/bin:${PATH}"
+            export PATH
+            """
+        }
+        
+        func prependPath(customString:String) -> String {
+            """
+            PATH="\(customString):${PATH}"
             export PATH
             """
         }
