@@ -1,6 +1,6 @@
 # USDServiceProvider
 
-Initial proof of concept for using OpenUSD Library in a MacOS (Linux, soon) project written in Swift.
+Initial proof of concept for using OpenUSD Library in a MacOS or Linux project written in Swift.
 
 This Library expects the programmer to have a known-good build of OpenUSD, using one of the following: 
 
