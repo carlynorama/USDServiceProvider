@@ -1,6 +1,6 @@
 import Foundation
 
-public struct USDServiceProvider {
+public struct USDServiceProvider:USDService {
     
     public private(set) var pathToBaseDir:String
     public private(set) var pythonEnv:PythonEnvironment
