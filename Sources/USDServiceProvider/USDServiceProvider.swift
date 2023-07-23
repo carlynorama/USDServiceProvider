@@ -1,43 +1,62 @@
 import Foundation
 
 public struct USDServiceProvider {
-    public private(set) var pathToBin:String
-    public private(set) var pythonPath:String
     
-    public init(_ pathToUSD:String? = nil) {
-        self.pathToBin = "/Users/carlynorama/opd/USD_nousdview_0722/bin"
-        self.pythonPath = "/Users/carlynorama/opd/USD_nousdview_0722/lib/python"
+    enum PythonVersion {
+        case defaultSystem
+        case pyenv(String)
+        case systemInstall(String)
     }
     
+    public private(set) var pathToBaseDir:String
+    
+    public init(pathToUSDBuild:String) {
+        self.pathToBaseDir = pathToUSDBuild
+    }
+    
+    var pathToBin:String {
+        "\(pathToBaseDir)/bin"
+    }
+    
+    var pathToPython:String {
+        "\(pathToBaseDir)/lib/python"
+    }
     
     public func usdcatHelp() -> String {
         let message = try? shell("\(pathToBin)/usdcat -h")
         return (message != nil) ? message! : "nothing to say"
     }
     
-    public func makeUSDC(inputFile:String, outputFile:String) {
+    public func makeCrate(from inputFile:String, outputFile:String) {
        // print(try? shell("pwd"))
-        let message = try? shell("\(pathToBin)/usdcat -o \(outputFile) --flatten \(inputFile)")
+        let message = try? shell("usdcat -o \(outputFile) --flatten \(inputFile)")
         print(message ?? "")
     }
     
-    @discardableResult // Add to suppress warnings when you don't want/need a result
+    public func check(_ inputFile:String) {
+       // print(try? shell("pwd"))
+        let message = try? shell("usdchecker \(inputFile)")
+        print(message ?? "")
+    }
+    
+    @discardableResult
     func shell(_ command: String) throws -> String {
         let task = Process()
         let pipe = Pipe()
         
         task.standardOutput = pipe
         task.standardError = pipe
-        task.arguments = ["-c", command]
+        task.arguments = ["-c", environmentWrap(command)]
         
         task.standardInput = nil
         task.executableURL = URL(fileURLWithPath: "/bin/bash") //<-- what shell
         
-        
-//        var environment =  ProcessInfo.processInfo.environment
-//        environment["PYTHONPATH"] = "\(pythonPath)"
+        //The technically correct way to pass in environment vars.
+        //Does work.
+        //var environment =  ProcessInfo.processInfo.environment
+        //environment["PYTHONPATH"] = "\(pathToPython)"
         //task.environment = environment
-        print(task.environment ?? "")
+        //print(task.environment ?? "")
         
         try task.run()
         
@@ -59,6 +78,24 @@ extension USDServiceProvider {
 //        guard let urlTest = URL(string: path ) else { return nil }
 //        self.pathToBin = path
 //    }
+    
+    func environmentWrap(_ newCommand:String) -> String {
+        """
+        \(setPythonWithPyEnv(version:"3.10"))
+        export PATH=$PATH:\(pathToBaseDir)/bin;
+        export PYTHONPATH=$PYTHONPATH:\(pathToBaseDir)/lib/python
+        \(newCommand)
+"""
+    }
+    
+    func setPythonWithPyEnv(version:String) -> String {
+        """
+        export PYENV_ROOT="$HOME/.pyenv"
+        command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"
+        eval "$(pyenv init -)"
+        export PYENV_VERSION=\(version)
+        """
+    }
 }
 
 
