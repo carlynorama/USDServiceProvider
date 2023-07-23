@@ -2,16 +2,13 @@ import Foundation
 
 public struct USDServiceProvider {
     
-    enum PythonVersion {
-        case defaultSystem
-        case pyenv(String)
-        case systemInstall(String)
-    }
-    
     public private(set) var pathToBaseDir:String
+    public private(set) var pythonEnv:PythonEnvironment
     
-    public init(pathToUSDBuild:String) {
+    
+    public init(pathToUSDBuild:String, pythonEnv:PythonEnvironment) {
         self.pathToBaseDir = pathToUSDBuild
+        self.pythonEnv = pythonEnv
     }
     
     var pathToBin:String {
@@ -46,7 +43,7 @@ public struct USDServiceProvider {
         
         task.standardOutput = pipe
         task.standardError = pipe
-        task.arguments = ["-c", environmentWrap(command)]
+        task.arguments = ["-c", environmentWrap(command, python: .pyenv("3.10"))]
         
         task.standardInput = nil
         task.executableURL = URL(fileURLWithPath: "/bin/bash") //<-- what shell
@@ -68,56 +65,49 @@ public struct USDServiceProvider {
 }
 
 extension USDServiceProvider {
-    //TODO: Needs improvement
-//    public init?() {
-//        guard let path = try? Self.shell("which usdchecker") else {
-//            return nil
-//        }
-//        if path.isEmpty { return nil }
-//        if path.contains("not found") { return nil }
-//        guard let urlTest = URL(string: path ) else { return nil }
-//        self.pathToBin = path
-//    }
     
-    func environmentWrap(_ newCommand:String) -> String {
+    public enum PythonEnvironment {
+        case defaultSystem
+        case pyenv(String)
+        case systemInstall(String)
+        
+        var setString:String {
+            switch self {
+                
+            case .defaultSystem:
+                return ""
+            case .pyenv(let v):
+                return setPythonWithPyEnv(version: v)
+            case .systemInstall(let v):
+                return setPythonSystem(version: v)
+            }
+        }
+        
+        func setPythonWithPyEnv(version:String) -> String {
+            """
+            export PYENV_ROOT="$HOME/.pyenv"
+            command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"
+            eval "$(pyenv init -)"
+            export PYENV_VERSION=\(version)
+            """
+        }
+        
+        func setPythonSystem(version:String) -> String {
+            """
+            PATH="/Library/Frameworks/Python.framework/Versions/\(version)/bin:${PATH}"
+            export PATH
+            """
+        }
+    }
+    
+    
+    func environmentWrap(_ newCommand:String, python:PythonEnvironment) -> String {
         """
-        \(setPythonWithPyEnv(version:"3.10"))
+        \(python.setString)
         export PATH=$PATH:\(pathToBaseDir)/bin;
         export PYTHONPATH=$PYTHONPATH:\(pathToBaseDir)/lib/python
         \(newCommand)
-"""
-    }
-    
-    func setPythonWithPyEnv(version:String) -> String {
-        """
-        export PYENV_ROOT="$HOME/.pyenv"
-        command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"
-        eval "$(pyenv init -)"
-        export PYENV_VERSION=\(version)
         """
     }
+
 }
-
-
-//public func echo(_ input:String) -> String {
-//    if input.isEmpty {
-//        return "[crickets chirping]"
-//    } else {
-//        let message = try? shell("echo \(input)")
-//        return (message != nil) ? message! : "nothing to say"
-//    }
-//
-//}
-//
-//public func whatsInMyBin() {
-//    let testPath = "/usr/bin"
-//    let ls = Process()
-//    //https://manned.org/env.1
-//    ls.executableURL = URL(fileURLWithPath: "/usr/bin/env")
-//    ls.arguments = ["ls", "-al", testPath]
-//    do{
-//        try ls.run()
-//    } catch {
-//        print(error)
-//    }
-//}
