@@ -1,10 +1,11 @@
 # USDServiceProvider
 
-A description of this package.
+Initial proof of concept for using OpenUSD Library in a MacOS or Linux project written in Swift.
 
 
 ## Example Usage
 
+See: https://github.com/carlynorama/USDTestingCLI
 
 A CLI Client Main File
 
@@ -58,7 +59,7 @@ public struct USDTestingCLI:ParsableCommand {
 
 ```
 
-Package file using as a local libray
+Package file using as a local library
 
 ```
 // swift-tools-version: 5.8
