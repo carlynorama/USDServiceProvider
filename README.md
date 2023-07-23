@@ -2,7 +2,7 @@
 
 Initial proof of concept for using OpenUSD Library in a MacOS (Linux, soon) project written in Swift.
 
-This Library expects the programmer to have a known-good build of OpenUSD, using the 
+This Library expects the programmer to have a known-good build of OpenUSD, using one of the following: 
 
 - system's default build of python
 - a pyenv managed version of python
