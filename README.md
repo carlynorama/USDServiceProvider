@@ -11,12 +11,12 @@ This Library expects the programmer to have a known-good build of OpenUSD, using
 
 Not many functions working yet but usdacat and usdchecker can be run and return values.
 
-Recommendation to build and run using swift
-
 
 ## Example Usage
 
 See: https://github.com/carlynorama/USDTestingCLI
+
+This CLI has an easier time of it running via "swift run myusdtests" rather than Xcode run button due to python sandboxing and path complexities. It still can works, just a bit more fiddly.
 
 A CLI Client Main File
 
