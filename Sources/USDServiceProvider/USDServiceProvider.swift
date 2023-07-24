@@ -21,12 +21,6 @@ public struct USDServiceProvider:USDService {
     
     //MARK: Conversion
     
-//    public func usdcatHelp() -> String {
-//        //Environment setting means don't need full path.
-//        let message = try? shell("\(pathToBin)/usdcat -h")
-//        return (message != nil) ? message! : "nothing to say"
-//    }
-    
     //TODO: Better form would to have all the intakes be URLs?
     
     @discardableResult
@@ -37,6 +31,7 @@ public struct USDServiceProvider:USDService {
     }
     
     //MARK: Checking/Validating
+    
     public func check(filePath inputFile:String) -> String {
         let message = try? shell("usdchecker \(inputFile)")
         return message ?? "no message"
@@ -62,14 +57,6 @@ public struct USDServiceProvider:USDService {
     
     // TODO: Try on computer with system python USD Build
     // (Works from Terminal other shell program, not so much XCode b/c of pyenv, see above todo)
-
-    // If doing things with Python ends up being The Way, look into
-    // - https://github.com/pvieito/PythonKit?
-    // - PythonKit difficult to support? https://forums.swift.org/t/pythonkit-library-not-working-after-releasing-it-to-testflight/65759/3
-    // - https://forums.swift.org/t/pythonkit-not-linking/62459/4
-    // - https://github.com/apple/swift-evolution/blob/main/proposals/0195-dynamic-member-lookup.md
-    // - https://docs.python.org/3/c-api/index.html
-    
     public func saveHelloWorld(to outputLocation:String) {
         let current = URL(string: #file)
         let dir = current!.deletingLastPathComponent()
@@ -78,7 +65,7 @@ public struct USDServiceProvider:USDService {
     }
     
     
-    //MARK: Helpers
+    //MARK: Shell Caller
     @discardableResult
     func shell(_ command: String) throws -> String {
         let task = Process()
@@ -104,6 +91,14 @@ public struct USDServiceProvider:USDService {
         let output = String(data: data, encoding: .utf8)!
         
         return output
+    }
+    
+    //left in b/c useful for checking if can find bin folder correctly.
+    //Not part of USDService protocol
+    public func usdcatHelp() -> String {
+        //Environment setting means don't need full path.
+        let message = try? shell("\(pathToBin)/usdcat -h")
+        return (message != nil) ? message! : "nothing to say"
     }
 }
 
