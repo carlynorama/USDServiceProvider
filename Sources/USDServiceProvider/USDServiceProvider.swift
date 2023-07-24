@@ -19,11 +19,15 @@ public struct USDServiceProvider:USDService {
         "\(pathToBaseDir)/lib/python"
     }
     
-    public func usdcatHelp() -> String {
-        //TODO: Environment setting means don't need full path.
-        let message = try? shell("\(pathToBin)/usdcat -h")
-        return (message != nil) ? message! : "nothing to say"
-    }
+    //MARK: Conversion
+    
+//    public func usdcatHelp() -> String {
+//        //Environment setting means don't need full path.
+//        let message = try? shell("\(pathToBin)/usdcat -h")
+//        return (message != nil) ? message! : "nothing to say"
+//    }
+    
+    //TODO: Better form would to have all the intakes be URLs?
     
     @discardableResult
     public func makeCrate(from inputFile:String, outputFile:String) -> String {
@@ -32,15 +36,46 @@ public struct USDServiceProvider:USDService {
         return message ?? ""
     }
     
-    public func check(_ inputFile:String) -> String {
-       // print(try? shell("pwd"))
+    //MARK: Checking/Validating
+    public func check(filePath inputFile:String) -> String {
         let message = try? shell("usdchecker \(inputFile)")
         return message ?? "no message"
     }
     
+    public func check(url inputURL:URL) -> String {
+        let message = try? shell("usdchecker \(inputURL.absoluteString)")
+        return message ?? "no message"
+    }
     
-    // Works from Terminal other shell program, not so much XCode b/c of pyenv
+    public func check(string inputString:String) -> String {
+        let tmp_file_dir = FileManager().temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        print(tmp_file_dir.absoluteString)
+        let tmp_file_path = "\(tmp_file_dir.absoluteString)/tmp_test.usda"
+        
+        do {
+            try inputString.write(toFile:tmp_file_path, atomically: true, encoding: .utf8)
+            FileManager.fileExists(tmp_file_path)
+            let message = try shell("usdchecker \(tmp_file_path)")
+            print("TEST: \(message)")
+            try FileManager.default.removeItem(at: URL(string: tmp_file_path )!)
+            return message
+        } catch {
+            return "\(error) FAILURE!!!"
+        }
+    }
+    
+    //MARK: Proof can use python
+    
     // TODO: Try on computer with system python USD Build
+    // (Works from Terminal other shell program, not so much XCode b/c of pyenv, see above todo)
+
+    // If doing things with Python ends up being The Way, look into
+    // - https://github.com/pvieito/PythonKit?
+    // - PythonKit difficult to support? https://forums.swift.org/t/pythonkit-library-not-working-after-releasing-it-to-testflight/65759/3
+    // - https://forums.swift.org/t/pythonkit-not-linking/62459/4
+    // - https://github.com/apple/swift-evolution/blob/main/proposals/0195-dynamic-member-lookup.md
+    // - https://docs.python.org/3/c-api/index.html
+    
     public func saveHelloWorld(to outputLocation:String) {
         let current = URL(string: #file)
         let dir = current!.deletingLastPathComponent()
@@ -48,6 +83,8 @@ public struct USDServiceProvider:USDService {
         print("message:\(message ?? "no message")")
     }
     
+    
+    //MARK: Helpers
     @discardableResult
     func shell(_ command: String) throws -> String {
         let task = Process()
@@ -76,6 +113,7 @@ public struct USDServiceProvider:USDService {
     }
 }
 
+//MARK: Python Environment Management
 extension USDServiceProvider {
     
     func environmentWrap(_ newCommand:String, python:PythonEnvironment) -> String {
