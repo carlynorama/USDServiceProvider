@@ -48,16 +48,10 @@ public struct USDServiceProvider:USDService {
     }
     
     public func check(string inputString:String) -> String {
-        let tmp_file_dir = FileManager().temporaryDirectory.appendingPathComponent(UUID().uuidString)
-        print(tmp_file_dir.absoluteString)
-        let tmp_file_path = "\(tmp_file_dir.absoluteString)/tmp_test.usda"
-        
         do {
-            try inputString.write(toFile:tmp_file_path, atomically: true, encoding: .utf8)
-            FileManager.fileExists(tmp_file_path)
-            let message = try shell("usdchecker \(tmp_file_path)")
-            print("TEST: \(message)")
-            try FileManager.default.removeItem(at: URL(string: tmp_file_path )!)
+            let tmp = FileManager.default.temporaryDirectory
+            let tmpFile = "\(tmp.path)/for_checker.usda"
+            let message = try shell("usdchecker \(tmpFile)")
             return message
         } catch {
             return "\(error) FAILURE!!!"
