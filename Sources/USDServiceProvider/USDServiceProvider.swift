@@ -6,7 +6,6 @@ public struct USDServiceProvider:USDService {
     public private(set) var pathToBaseDir:String
     public private(set) var pythonEnv:PythonEnvironment
     
-    
     public init(pathToUSDBuild:String, pythonEnv:PythonEnvironment) {
         self.pathToBaseDir = pathToUSDBuild
         self.pythonEnv = pythonEnv
@@ -26,7 +25,7 @@ public struct USDServiceProvider:USDService {
     
     @discardableResult
     public func makeCrate(from inputFile:String, outputFile:String) -> Result<String, Error> {
-       // print(try? shell("pwd"))
+        // print(try? shell("pwd"))
         do {
             let message = try shell("usdcat -o \(outputFile) --flatten \(inputFile)")
             
@@ -39,8 +38,6 @@ public struct USDServiceProvider:USDService {
         } catch {
             return .failure(error)
         }
-
-        
     }
     
     //MARK: Checking/Validating
@@ -51,19 +48,13 @@ public struct USDServiceProvider:USDService {
     }
     
     public func check(url inputURL:URL) -> String {
-        let message = try? shell("usdchecker \(inputURL.absoluteString)")
-        return message ?? "no message"
+        check(filePath:inputURL.absoluteString)
     }
     
     public func check(string inputString:String) -> String {
-        do {
-            let tmp = FileManager.default.temporaryDirectory
-            let tmpFile = "\(tmp.path)/for_checker.usda"
-            let message = try shell("usdchecker \(tmpFile)")
-            return message
-        } catch {
-            return "\(error) FAILURE!!!"
-        }
+        let tmp = FileManager.default.temporaryDirectory
+        let tmpFile = "\(tmp.path)/for_checker.usda"
+        return check(filePath:tmpFile)
     }
     
     //MARK: Proof can use python
@@ -76,7 +67,6 @@ public struct USDServiceProvider:USDService {
         let message = try? shell("python3 \(dir)/python_scripts/hello_world.py \(outputLocation)")
         print("message:\(message ?? "no message")")
     }
-    
     
     //MARK: Shell Caller
     @discardableResult
@@ -170,5 +160,4 @@ extension USDServiceProvider {
             """
         }
     }
-
 }
