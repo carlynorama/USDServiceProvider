@@ -1,5 +1,6 @@
 import Foundation
 
+
 public struct USDServiceProvider:USDService {
     
     public private(set) var pathToBaseDir:String
@@ -24,10 +25,22 @@ public struct USDServiceProvider:USDService {
     //TODO: Better form would to have all the intakes be URLs?
     
     @discardableResult
-    public func makeCrate(from inputFile:String, outputFile:String) -> String {
+    public func makeCrate(from inputFile:String, outputFile:String) -> Result<String, Error> {
        // print(try? shell("pwd"))
-        let message = try? shell("usdcat -o \(outputFile) --flatten \(inputFile)")
-        return message ?? ""
+        do {
+            let message = try shell("usdcat -o \(outputFile) --flatten \(inputFile)")
+            
+            if !FileManager.default.fileExists(atPath: outputFile) {
+                return .failure(USDServiceError("Crate file not made, \(message)"))
+            }
+            if message.isEmpty { return .success(outputFile) }
+            
+            fatalError("message from success? unhandled: \(message)")
+        } catch {
+            return .failure(error)
+        }
+
+        
     }
     
     //MARK: Checking/Validating
